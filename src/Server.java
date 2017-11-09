@@ -10,8 +10,13 @@ import java.io.*;
 public class Server {
     public static Blackboard serverBlackboard;
     private static ArrayList<Socket> sockets = new ArrayList();
+    public static final int PIXEL_SIZE = 8;
+    public static final int CANVAS_SIZE = 32;
     
     public static void main(String[] args) {
+        // Instanciate blackboard
+        serverBlackboard = new Blackboard();
+        
         // Thread pool to handle multiple clients
         ExecutorService e = Executors.newCachedThreadPool();
         System.out.println("Starting server...");

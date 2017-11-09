@@ -2,20 +2,24 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.Random;
+import java.net.*;
+import java.io.*;
 
 class Surface extends JPanel implements ActionListener {
-
     private final int PIXEL_SIZE = 8;
     private final int CANVAS_SIZE = 32;
     
     private final int DELAY = 150;
     private Timer timer;
 
-    private Blackboard blackboard = new Blackboard();
+    Blackboard blackboard = JFrame_Blackboard.blackboard;
     
     public Surface() {
-
         initTimer();
+        ClientThread clientThread = new ClientThread();
+        clientThread.setBlackboard(blackboard);
+        
+        //clientThread.run();
     }
 
     private void initTimer() {
@@ -70,14 +74,77 @@ class Surface extends JPanel implements ActionListener {
         blackboard.setPixel(x / PIXEL_SIZE, y / PIXEL_SIZE, r, g, b);
         
         // Ask server to paint same pixel
-        // TODO
+        try {
+            JFrame_Main.out.writeUTF("1_" + (x / PIXEL_SIZE) + "_" + (y / PIXEL_SIZE) + "_" + r + "_" + g + "_" + b);
+        } catch (Exception e) {
+            // TODO - Connection error handling
+        }
+        
+        try {
+            JFrame_Main.out.writeUTF("0_");
+        } catch (Exception e) {
+            // TODO
+        }
+    }
+}
+
+class ClientThread implements Runnable {
+    private Blackboard blackboard;
+    
+    public void setBlackboard(Blackboard blackboard) {
+        this.blackboard = blackboard;
+    }
+    
+    public void run() {
+        System.out.println("Starting client thread");
+        
+        while (true) {
+            try {
+                String input = JFrame_Main.in.readUTF();
+                System.out.println("Message to client: " + input);
+                
+                switch (input.charAt(0)) {
+                    case '0':
+                        String[] msg = input.split("_");
+                        for (int i = 0; i < (Server.CANVAS_SIZE * Server.CANVAS_SIZE); ++i) {
+                            int x = i % Server.CANVAS_SIZE;
+                            int y = Math.round(i / Server.CANVAS_SIZE);
+
+                            int red = Integer.parseInt(msg[ (i*3)+1 ]);
+                            int green = Integer.parseInt(msg[ (i*3)+2 ]);
+                            int blue = Integer.parseInt(msg[ (i*3)+3 ]);
+                            blackboard.setPixel(x, y, red, green, blue);
+                        }
+                        break;
+                        
+                    case '1':
+                        // Painted a pixel
+                        String[] args = input.split("_");
+                        //System.out.println("Trying to paint pixel on server");
+                        //System.out.println("X: " + args[1] + "\nY: " + args[2]);
+                        //System.out.println("RGB: " + args[3] + args[4] + args[5]);
+                        blackboard.setPixel(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+                        break;
+                }
+            } catch (Exception e) {
+                // TODO: Handle connetion error
+                break;
+            }
+        }
     }
 }
 
 public class JFrame_Blackboard extends JFrame {
-
+    public static Blackboard blackboard = new Blackboard();
+    
     public JFrame_Blackboard() {
         initUI();
+        
+        ClientThread clientThread = new ClientThread();
+        clientThread.setBlackboard(blackboard);
+        //clientThread.start();
+        Thread thread = new Thread(clientThread);
+        thread.start();
     }
     
     private void initUI() {

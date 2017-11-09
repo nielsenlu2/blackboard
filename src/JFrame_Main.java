@@ -13,9 +13,9 @@ import javax.swing.JOptionPane;
  * @author aluno
  */
 public class JFrame_Main extends javax.swing.JFrame {
-
-    //
     static Socket socket;
+    static DataInputStream in;
+    static DataOutputStream out;
     
     /**
      * Creates new form JFrame_Main
@@ -41,6 +41,10 @@ public class JFrame_Main extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jTextField_IP.setText("localhost");
+
+        jTextField_Port.setText("27888");
 
         jButton_Connect.setText("Connect");
         jButton_Connect.addActionListener(new java.awt.event.ActionListener() {
@@ -107,8 +111,8 @@ public class JFrame_Main extends javax.swing.JFrame {
         
         try {
             socket = new Socket(ip, Integer.parseInt(port));
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
         
             // Create JForm for drawing
             JFrame_Blackboard window = new JFrame_Blackboard();
