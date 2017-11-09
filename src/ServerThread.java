@@ -1,6 +1,11 @@
 import java.net.*;
 import java.io.*;
 
+///
+/// This class is instantiated for each client
+/// that connects to the server. It is responsible
+/// for handling all network messages.
+///
 public class ServerThread implements Runnable {
     private Socket socket;
     
@@ -9,20 +14,19 @@ public class ServerThread implements Runnable {
     }
     
     public void run() {
-        //
         try {
             DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
             while (true) {
+                // Read incoming message
                 String input = in.readUTF();
                 
-                System.out.println("Incoming message: " + input);
-                
-                // Discover which message type
+                // Discover which message type we received
                 switch (input.charAt(0)) {
                     case '0':
-                        // Requested update
+                        // Message type 0: client has requested a global
+                        // canvas update. We must send all pixels' RGB values.
                         String msg = "0";
                         
                         for (int i = 0; i < (Server.CANVAS_SIZE * Server.CANVAS_SIZE); ++i) {
@@ -35,14 +39,13 @@ public class ServerThread implements Runnable {
                         out.writeUTF(msg);
                         break;
                     case '1':
+                        // It's a pixel painting message - must
+                        // forward it to all users so they see
+                        // the newly painted pixel
                         Server.sendGlobalUTF(input);
                         
-                        // Painted a pixel
+                        // Paint pixel in global server blackboard
                         String[] args = input.split("_");
-                        System.out.println("Trying to paint pixel on server");
-                        System.out.println("X: " + args[1] + "\nY: " + args[2]);
-                        System.out.println("RGB: " + args[3] + args[4] + args[5]);
-                        //Server.serverBlackboard.setPixel(0, 0, 0, 255, 0);
                         Server.serverBlackboard.setPixel(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
                         break;
                     case '2':
@@ -50,7 +53,7 @@ public class ServerThread implements Runnable {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Server error: " + e.toString());
+            System.out.println("ERROR (IN SERVERTHREAD): " + e.toString());
         }
-   }
+    }
 }

@@ -105,11 +105,12 @@ public class JFrame_Main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton_ConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_ConnectActionPerformed
-        // Attempt connection
+        // Get text field input
         String ip = jTextField_IP.getText();
         String port = jTextField_Port.getText();
         
         try {
+            // Attempt connection
             socket = new Socket(ip, Integer.parseInt(port));
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
@@ -117,6 +118,9 @@ public class JFrame_Main extends javax.swing.JFrame {
             // Create JForm for drawing
             JFrame_Blackboard window = new JFrame_Blackboard();
             window.setVisible(true);
+            
+            // Close connection window
+            this.setVisible(false);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error connecting to server: \n" + e.toString());
         }

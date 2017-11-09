@@ -5,10 +5,11 @@ import java.util.Random;
 import java.net.*;
 import java.io.*;
 
+///
+/// This class is responsible for
+/// drawing on screen using g2d.
+///
 class Surface extends JPanel implements ActionListener {
-    private final int PIXEL_SIZE = 8;
-    private final int CANVAS_SIZE = 32;
-    
     private final int DELAY = 150;
     private Timer timer;
 
@@ -19,7 +20,13 @@ class Surface extends JPanel implements ActionListener {
         ClientThread clientThread = new ClientThread();
         clientThread.setBlackboard(blackboard);
         
-        //clientThread.run();
+        // Request global update since we just
+        // created the drawing canvas
+        try {
+            JFrame_Main.out.writeUTF("0_");
+        } catch (Exception e) {
+            // TODO - Connection error handling
+        }
     }
 
     private void initTimer() {
@@ -34,28 +41,17 @@ class Surface extends JPanel implements ActionListener {
     private void Draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        for (int i = 0; i < CANVAS_SIZE; ++i) {
-            for (int j = 0; j < CANVAS_SIZE; ++j) {
+        for (int i = 0; i < Server.CANVAS_SIZE; ++i) {
+            for (int j = 0; j < Server.CANVAS_SIZE; ++j) {
                 // Retrieve correct color
                 g2d.setPaint(new Color(blackboard.getPixel(i, j, 0), blackboard.getPixel(i, j, 1), blackboard.getPixel(i, j, 2), 255));
                 
                 // Draw pixel on screen
-                int x = i * PIXEL_SIZE;
-                int y = j * PIXEL_SIZE;
-                g2d.fillRect(x, y, x + PIXEL_SIZE, y + PIXEL_SIZE);
+                int x = i * Server.PIXEL_SIZE;
+                int y = j * Server.PIXEL_SIZE;
+                g2d.fillRect(x, y, x + Server.PIXEL_SIZE, y + Server.PIXEL_SIZE);
             }
         }
-        
-        /*int w = getWidth();
-        int h = getHeight();
-
-        Random r = new Random();
-
-        for (int i = 0; i < 2000; i++) {
-            int x = Math.abs(r.nextInt()) % w;
-            int y = Math.abs(r.nextInt()) % h;
-            g2d.drawLine(x, y, x, y);
-        }*/
     }
 
     @Override
@@ -69,25 +65,25 @@ class Surface extends JPanel implements ActionListener {
         repaint();
     }
     
+    // Called when user clicks on the canvas
     public void paintPixel(int x, int y, int r, int g, int b) {
         // Paint pixel locally
-        blackboard.setPixel(x / PIXEL_SIZE, y / PIXEL_SIZE, r, g, b);
+        blackboard.setPixel(x / Server.PIXEL_SIZE, y / Server.PIXEL_SIZE, r, g, b);
         
         // Ask server to paint same pixel
         try {
-            JFrame_Main.out.writeUTF("1_" + (x / PIXEL_SIZE) + "_" + (y / PIXEL_SIZE) + "_" + r + "_" + g + "_" + b);
+            JFrame_Main.out.writeUTF("1_" + (x / Server.PIXEL_SIZE) + "_" + (y / Server.PIXEL_SIZE) + "_" + r + "_" + g + "_" + b);
         } catch (Exception e) {
             // TODO - Connection error handling
-        }
-        
-        try {
-            JFrame_Main.out.writeUTF("0_");
-        } catch (Exception e) {
-            // TODO
         }
     }
 }
 
+///
+/// This class is responsible for handling
+/// network messages without locking up the
+/// drawing canvas while waiting.
+///
 class ClientThread implements Runnable {
     private Blackboard blackboard;
     
@@ -96,16 +92,18 @@ class ClientThread implements Runnable {
     }
     
     public void run() {
-        System.out.println("Starting client thread");
+        System.out.println("INFO: Starting client thread");
         
         while (true) {
             try {
                 String input = JFrame_Main.in.readUTF();
-                System.out.println("Message to client: " + input);
                 
+                // Discover which message type
                 switch (input.charAt(0)) {
                     case '0':
+                        // Global canvas update
                         String[] msg = input.split("_");
+                        
                         for (int i = 0; i < (Server.CANVAS_SIZE * Server.CANVAS_SIZE); ++i) {
                             int x = i % Server.CANVAS_SIZE;
                             int y = Math.round(i / Server.CANVAS_SIZE);
@@ -120,14 +118,11 @@ class ClientThread implements Runnable {
                     case '1':
                         // Painted a pixel
                         String[] args = input.split("_");
-                        //System.out.println("Trying to paint pixel on server");
-                        //System.out.println("X: " + args[1] + "\nY: " + args[2]);
-                        //System.out.println("RGB: " + args[3] + args[4] + args[5]);
                         blackboard.setPixel(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
                         break;
                 }
             } catch (Exception e) {
-                // TODO: Handle connetion error
+                // TODO: Handle connection error
                 break;
             }
         }
@@ -136,13 +131,16 @@ class ClientThread implements Runnable {
 
 public class JFrame_Blackboard extends JFrame {
     public static Blackboard blackboard = new Blackboard();
+    private Color color = new Color(230, 10, 10);
     
     public JFrame_Blackboard() {
+        // Initialize g2d canvas
         initUI();
         
+        // Create a separate thread to handle
+        // network messages
         ClientThread clientThread = new ClientThread();
         clientThread.setBlackboard(blackboard);
-        //clientThread.start();
         Thread thread = new Thread(clientThread);
         thread.start();
     }
@@ -151,6 +149,7 @@ public class JFrame_Blackboard extends JFrame {
         final Surface surface = new Surface();
         add(surface);
 
+        // Handle window events
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -159,20 +158,28 @@ public class JFrame_Blackboard extends JFrame {
             }
         });
         
+        // Handle mouse events
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 // Call function to draw pixel
                 int mouse_x = e.getX() - 8;
                 int mouse_y = e.getY() - 32;
-                
-                surface.paintPixel(mouse_x, mouse_y, 255, 0, 0);
-                System.out.println("X: " + mouse_x + "\nY: " + mouse_y);
+
+                // If right-mouse pressed
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    // Select a new color
+                    color = JColorChooser.showDialog(null, "Choose a color", Color.RED);
+                } else {
+                    // Paint an individual pixel
+                    surface.paintPixel(mouse_x, mouse_y, color.getRed(), color.getGreen(), color.getBlue());
+                }
             } 
         });
 
+        // Set window properties
         setTitle("Blackboard");
-        setSize(32 * 8, 32 * 8);
+        setSize(Server.CANVAS_SIZE * Server.PIXEL_SIZE, Server.CANVAS_SIZE * Server.PIXEL_SIZE);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
