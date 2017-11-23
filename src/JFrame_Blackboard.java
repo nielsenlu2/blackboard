@@ -169,7 +169,10 @@ public class JFrame_Blackboard extends JFrame {
                 // If right-mouse pressed
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     // Select a new color
-                    color = JColorChooser.showDialog(null, "Choose a color", Color.RED);
+                    Color newColor = JColorChooser.showDialog(null, "Choose a color", Color.RED);
+                    
+                    if (newColor != null)
+                        color = newColor;
                 } else {
                     // Paint an individual pixel
                     surface.paintPixel(mouse_x, mouse_y, color.getRed(), color.getGreen(), color.getBlue());
