@@ -45,23 +45,26 @@ class Surface extends JPanel implements ActionListener {
         for (int i = 0; i < Server.CANVAS_SIZE; ++i) {
             for (int j = 0; j < Server.CANVAS_SIZE; ++j) {
                 // Retrieve correct color
-                g2d.setPaint(new Color(blackboard.getPixel(i, j, 0), blackboard.getPixel(i, j, 1), blackboard.getPixel(i, j, 2), 255));
-                
+                Color currentColor = new Color(blackboard.getPixel(i, j, 0), blackboard.getPixel(i, j, 1), blackboard.getPixel(i, j, 2), 255);
+                g2d.setPaint(currentColor);
+
                 // Draw pixel on screen
-                int x = i * Server.PIXEL_SIZE;
-                int y = j * Server.PIXEL_SIZE;
-                g2d.fillRect(x, y, x + Server.PIXEL_SIZE, y + Server.PIXEL_SIZE);
+                int x = i * JFrame_Blackboard.PIXEL_SIZE;
+                int y = j * JFrame_Blackboard.PIXEL_SIZE;
+                g2d.fillRect(x, y, x + JFrame_Blackboard.PIXEL_SIZE, y + JFrame_Blackboard.PIXEL_SIZE);
             }
         }
         
         // Draw the grid
-        g2d.setPaint(new Color(255, 255, 255, 50));
-        for (int i = 0; i < Server.CANVAS_SIZE * Server.PIXEL_SIZE; i += Server.PIXEL_SIZE) {
-            g2d.drawLine(i, 0, i, Server.CANVAS_SIZE * Server.PIXEL_SIZE);
-        }
-        
-        for (int j = 0; j < Server.CANVAS_SIZE * Server.PIXEL_SIZE; j += Server.PIXEL_SIZE) {
-            g2d.drawLine(0, j, Server.CANVAS_SIZE * Server.PIXEL_SIZE, j);
+        if (JFrame_Blackboard.drawGrid == true) {
+            g2d.setPaint(new Color(255, 255, 255, 30));
+            for (int i = 0; i < Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE; i += JFrame_Blackboard.PIXEL_SIZE) {
+                g2d.drawLine(i, 0, i, Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE);
+            }
+
+            for (int j = 0; j < Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE; j += JFrame_Blackboard.PIXEL_SIZE) {
+                g2d.drawLine(0, j, Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE, j);
+            }
         }
     }
 
@@ -79,11 +82,11 @@ class Surface extends JPanel implements ActionListener {
     // Called when user clicks on the canvas
     public void paintPixel(int x, int y, int r, int g, int b) {
         // Paint pixel locally
-        blackboard.setPixel(x / Server.PIXEL_SIZE, y / Server.PIXEL_SIZE, r, g, b);
+        blackboard.setPixel(x / JFrame_Blackboard.PIXEL_SIZE, y / JFrame_Blackboard.PIXEL_SIZE, r, g, b);
         
         // Ask server to paint same pixel
         try {
-            JFrame_Main.out.writeUTF("1_" + (x / Server.PIXEL_SIZE) + "_" + (y / Server.PIXEL_SIZE) + "_" + r + "_" + g + "_" + b);
+            JFrame_Main.out.writeUTF("1_" + (x / JFrame_Blackboard.PIXEL_SIZE) + "_" + (y / JFrame_Blackboard.PIXEL_SIZE) + "_" + r + "_" + g + "_" + b);
         } catch (Exception e) {
             // TODO - Connection error handling
         }
@@ -142,6 +145,8 @@ class ClientThread implements Runnable {
 
 public class JFrame_Blackboard extends JFrame {
     public static Blackboard blackboard = new Blackboard();
+    public static int PIXEL_SIZE = Server.PIXEL_SIZE;
+    public static boolean drawGrid = true; 
     private Color color = new Color(230, 10, 10);
     
     public JFrame_Blackboard() {
@@ -193,7 +198,7 @@ public class JFrame_Blackboard extends JFrame {
 
         // Set window properties
         setTitle("Blackboard");
-        setSize(Server.CANVAS_SIZE * Server.PIXEL_SIZE, Server.CANVAS_SIZE * Server.PIXEL_SIZE);
+        setSize(Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE, Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
