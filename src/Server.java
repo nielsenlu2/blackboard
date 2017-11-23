@@ -21,6 +21,7 @@ public class Server {
     public static void main(String[] args) {
         // Instanciate blackboard
         serverBlackboard = new Blackboard();
+        loadBlackboard();
         
         // Thread pool to handle multiple clients
         ExecutorService e = Executors.newCachedThreadPool();
@@ -50,6 +51,63 @@ public class Server {
             }
         } catch (Exception e) {
             System.out.println("WARNING: Tried sending message to closed socket. Client is probably disconnected.");
+        }
+        
+        saveBlackboard();
+    }
+    
+    // Save & load blackboard from file
+    public static void saveBlackboard() {
+        try {
+            // Open file for writing
+            FileWriter fileWriter = new FileWriter("blackboard.save");
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            // Request info from server
+            Socket tempSocket = new Socket("localhost", 27888);
+            DataInputStream in = new DataInputStream(tempSocket.getInputStream());
+            DataOutputStream out = new DataOutputStream(tempSocket.getOutputStream());
+            out.writeUTF("0_");
+            
+            // Write to file
+            bufferedWriter.write(in.readUTF());
+
+            // Release file
+            bufferedWriter.close();
+        } catch(IOException e) {
+            System.out.println("ERROR: Could not write blackboard to file" + '\n' + e.toString());
+        }
+    }
+    
+    public static void loadBlackboard() {
+        String input = "";
+        
+        try {
+            // Read file
+            FileReader fileReader = new FileReader("blackboard.save");
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            input = bufferedReader.readLine();
+
+            // Always close files.
+            bufferedReader.close();         
+        }
+        catch(Exception e) {
+            System.out.println("WARNING: Could not load save. Starting blank canvas. \nReason: " + e.toString());
+            return;
+        }
+        
+        // Transfer from file into blackboard
+        String[] msg = input.split("_");
+                        
+        for (int i = 0; i < (Server.CANVAS_SIZE * Server.CANVAS_SIZE); ++i) {
+            int x = i % Server.CANVAS_SIZE;
+            int y = Math.round(i / Server.CANVAS_SIZE);
+
+            int red = Integer.parseInt(msg[ (i*3)+1 ]);
+            int green = Integer.parseInt(msg[ (i*3)+2 ]);
+            int blue = Integer.parseInt(msg[ (i*3)+3 ]);
+            serverBlackboard.setPixel(x, y, red, green, blue);
         }
     }
 }
