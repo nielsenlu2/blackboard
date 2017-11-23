@@ -41,6 +41,7 @@ class Surface extends JPanel implements ActionListener {
     private void Draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
+        // Draw the pixels
         for (int i = 0; i < Server.CANVAS_SIZE; ++i) {
             for (int j = 0; j < Server.CANVAS_SIZE; ++j) {
                 // Retrieve correct color
@@ -51,6 +52,16 @@ class Surface extends JPanel implements ActionListener {
                 int y = j * Server.PIXEL_SIZE;
                 g2d.fillRect(x, y, x + Server.PIXEL_SIZE, y + Server.PIXEL_SIZE);
             }
+        }
+        
+        // Draw the grid
+        g2d.setPaint(new Color(255, 255, 255, 50));
+        for (int i = 0; i < Server.CANVAS_SIZE * Server.PIXEL_SIZE; i += Server.PIXEL_SIZE) {
+            g2d.drawLine(i, 0, i, Server.CANVAS_SIZE * Server.PIXEL_SIZE);
+        }
+        
+        for (int j = 0; j < Server.CANVAS_SIZE * Server.PIXEL_SIZE; j += Server.PIXEL_SIZE) {
+            g2d.drawLine(0, j, Server.CANVAS_SIZE * Server.PIXEL_SIZE, j);
         }
     }
 
