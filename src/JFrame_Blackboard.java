@@ -66,6 +66,14 @@ class Surface extends JPanel implements ActionListener {
                 g2d.drawLine(0, j, Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE, j);
             }
         }
+        
+        // Draw the toolbar
+        g2d.drawImage(JFrame_Blackboard.toolbarZoomPlus.getImage(), 0, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
+        g2d.drawImage(JFrame_Blackboard.toolbarZoomMinus.getImage(), 32, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
+        g2d.drawImage(JFrame_Blackboard.toolbarLeft.getImage(), 64, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
+        g2d.drawImage(JFrame_Blackboard.toolbarRight.getImage(), 96, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
+        g2d.drawImage(JFrame_Blackboard.toolbarUp.getImage(), 128, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
+        g2d.drawImage(JFrame_Blackboard.toolbarDown.getImage(), 160, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
     }
 
     @Override
@@ -147,6 +155,15 @@ public class JFrame_Blackboard extends JFrame {
     public static Blackboard blackboard = new Blackboard();
     public static int PIXEL_SIZE = Server.PIXEL_SIZE;
     public static boolean drawGrid = true; 
+    
+    //Load toolbar images
+    public static ImageIcon toolbarZoomPlus = new ImageIcon("32.png");
+    public static ImageIcon toolbarZoomMinus = new ImageIcon("32.png");
+    public static ImageIcon toolbarLeft = new ImageIcon("32.png");
+    public static ImageIcon toolbarRight = new ImageIcon("32.png");
+    public static ImageIcon toolbarUp = new ImageIcon("32.png");
+    public static ImageIcon toolbarDown = new ImageIcon("32.png");
+    
     private Color color = new Color(230, 10, 10);
     
     public JFrame_Blackboard() {
@@ -182,6 +199,39 @@ public class JFrame_Blackboard extends JFrame {
                 int mouse_x = e.getX() - 8;
                 int mouse_y = e.getY() - 32;
 
+                // Check if mouse was outside of canvas
+                if (mouse_x > Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE) {
+                    return;
+                }
+                
+                // Check if click was on toolbar
+                if (mouse_y > Server.CANVAS_SIZE * Server.PIXEL_SIZE) {
+                    int selection = mouse_x / 32;
+                    
+                    System.out.println("LOG: Selected option #" + selection);
+                    
+                    switch (selection) {
+                        case 0: // Zoom in
+                            JFrame_Blackboard.PIXEL_SIZE += 2;
+                            break;
+                        case 1: // Zoom out
+                            if (JFrame_Blackboard.PIXEL_SIZE > Server.PIXEL_SIZE) {
+                                JFrame_Blackboard.PIXEL_SIZE -= 2;
+                            }
+                            break;
+                        case 2: // Pan left
+                            break;
+                        case 3: // Pan right
+                            break;
+                        case 4: // Pan up
+                            break;
+                        case 5: // Pan down
+                            break;
+                    }
+                    
+                    return;
+                }
+                
                 // If right-mouse pressed
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     // Select a new color
@@ -198,7 +248,7 @@ public class JFrame_Blackboard extends JFrame {
 
         // Set window properties
         setTitle("Blackboard");
-        setSize(Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE, Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE);
+        setSize(Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE, 64 + (Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
