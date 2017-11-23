@@ -42,15 +42,20 @@ class Surface extends JPanel implements ActionListener {
         Graphics2D g2d = (Graphics2D) g;
 
         // Draw the pixels
-        for (int i = 0; i < Server.CANVAS_SIZE; ++i) {
-            for (int j = 0; j < Server.CANVAS_SIZE; ++j) {
+        for (int it = 0; it < Server.CANVAS_SIZE; ++it) {
+            for (int jt = 0; jt < Server.CANVAS_SIZE; ++jt) {
+                
+                // Calculate scroll offset
+                int i = it + JFrame_Blackboard.scrollX;
+                int j = jt + JFrame_Blackboard.scrollY;
+                
                 // Retrieve correct color
                 Color currentColor = new Color(blackboard.getPixel(i, j, 0), blackboard.getPixel(i, j, 1), blackboard.getPixel(i, j, 2), 255);
                 g2d.setPaint(currentColor);
 
                 // Draw pixel on screen
-                int x = i * JFrame_Blackboard.PIXEL_SIZE;
-                int y = j * JFrame_Blackboard.PIXEL_SIZE;
+                int x = it * JFrame_Blackboard.PIXEL_SIZE;
+                int y = jt * JFrame_Blackboard.PIXEL_SIZE;
                 g2d.fillRect(x, y, x + JFrame_Blackboard.PIXEL_SIZE, y + JFrame_Blackboard.PIXEL_SIZE);
             }
         }
@@ -90,11 +95,12 @@ class Surface extends JPanel implements ActionListener {
     // Called when user clicks on the canvas
     public void paintPixel(int x, int y, int r, int g, int b) {
         // Paint pixel locally
-        blackboard.setPixel(x / JFrame_Blackboard.PIXEL_SIZE, y / JFrame_Blackboard.PIXEL_SIZE, r, g, b);
+        blackboard.setPixel((x / JFrame_Blackboard.PIXEL_SIZE) + JFrame_Blackboard.scrollX,
+                            (y / JFrame_Blackboard.PIXEL_SIZE) + JFrame_Blackboard.scrollY, r, g, b);
         
         // Ask server to paint same pixel
         try {
-            JFrame_Main.out.writeUTF("1_" + (x / JFrame_Blackboard.PIXEL_SIZE) + "_" + (y / JFrame_Blackboard.PIXEL_SIZE) + "_" + r + "_" + g + "_" + b);
+            JFrame_Main.out.writeUTF("1_" + ((x / JFrame_Blackboard.PIXEL_SIZE)+JFrame_Blackboard.scrollX) + "_" + ((y / JFrame_Blackboard.PIXEL_SIZE)+JFrame_Blackboard.scrollY) + "_" + r + "_" + g + "_" + b);
         } catch (Exception e) {
             // TODO - Connection error handling
         }
@@ -151,10 +157,16 @@ class ClientThread implements Runnable {
     }
 }
 
+//
+// JFrame_Blackboard
+//
 public class JFrame_Blackboard extends JFrame {
     public static Blackboard blackboard = new Blackboard();
     public static int PIXEL_SIZE = Server.PIXEL_SIZE;
     public static boolean drawGrid = true; 
+    
+    public static int scrollX = 0;
+    public static int scrollY = 0;
     
     //Load toolbar images
     public static ImageIcon toolbarZoomPlus = new ImageIcon("32.png");
@@ -220,12 +232,24 @@ public class JFrame_Blackboard extends JFrame {
                             }
                             break;
                         case 2: // Pan left
+                            if (scrollX > 0) {
+                                scrollX--;
+                            }
                             break;
                         case 3: // Pan right
+                            if (scrollX < Server.CANVAS_SIZE) {
+                                scrollX++;
+                            }
                             break;
                         case 4: // Pan up
+                            if (scrollY > 0) {
+                                scrollY--;
+                            }
                             break;
                         case 5: // Pan down
+                            if (scrollY < Server.CANVAS_SIZE) {
+                                scrollY++;
+                            }
                             break;
                     }
                     
