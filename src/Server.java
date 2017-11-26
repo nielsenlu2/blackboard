@@ -19,6 +19,13 @@ public class Server {
     
     // Listen for incoming connections
     public static void main(String[] args) {
+        // Add callback to save blackboard on server exit
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                saveBlackboard();
+            }
+        }));
+        
         // Instanciate blackboard
         serverBlackboard = new Blackboard();
         loadBlackboard();
@@ -52,8 +59,6 @@ public class Server {
         } catch (Exception e) {
             System.out.println("WARNING: Tried sending message to closed socket. Client is probably disconnected.");
         }
-        
-        saveBlackboard();
     }
     
     // Save & load blackboard from file
