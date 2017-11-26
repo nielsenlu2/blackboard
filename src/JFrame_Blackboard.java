@@ -73,7 +73,7 @@ class Surface extends JPanel implements ActionListener {
         }
         
         // Draw the toolbar
-        g2d.drawImage(JFrame_Blackboard.toolbar.getImage(), 0, Server.WINDOW_HEIGHT-Server.TOOLBAR_HEIGHT, this);
+        g2d.drawImage(JFrame_Blackboard.toolbar.getImage(), 0, Server.WINDOW_HEIGHT-Server.TOOLBAR_HEIGHT - 6, this);
     }
 
     @Override
@@ -156,7 +156,7 @@ class ClientThread implements Runnable {
 // JFrame_Blackboard
 //
 public class JFrame_Blackboard extends JFrame {
-    public static Blackboard blackboard = new Blackboard();
+    public static Blackboard blackboard = new Blackboard(false);
     public static int PIXEL_SIZE = Server.PIXEL_SIZE;
     public static boolean drawGrid = true; 
     
@@ -189,6 +189,13 @@ public class JFrame_Blackboard extends JFrame {
             public void windowClosing(WindowEvent e) {
                 Timer timer = surface.getTimer();
                 timer.stop();
+                
+                // Ask server to save
+                try {
+                    JFrame_Main.out.writeUTF("2_");
+                } catch (Exception ex) {
+                    System.out.println("WARNING: Could not save on exit");
+                }
             }
         });
         
@@ -206,7 +213,7 @@ public class JFrame_Blackboard extends JFrame {
                 }
                 
                 // Check if click was on toolbar
-                if (mouse_y > (Server.WINDOW_HEIGHT - Server.TOOLBAR_HEIGHT) ) {
+                if (mouse_y > (Server.WINDOW_HEIGHT - Server.TOOLBAR_HEIGHT - 6) ) {
                     int selection = mouse_x / 32;
                     
                     System.out.println("LOG: Selected option #" + selection);

@@ -49,6 +49,8 @@ public class ServerThread implements Runnable {
                         Server.serverBlackboard.setPixel(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5]));
                         break;
                     case '2':
+                        // Client leaving. Save blackboard to file
+                        Server.saveBlackboard();
                         break;
                 }
             }

@@ -1,4 +1,5 @@
 import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 import java.util.ArrayList;
 import java.net.*;
 import java.io.*;
@@ -17,22 +18,15 @@ public class Server {
     public static final int PIXEL_SIZE = 8;
     public static final int CANVAS_SIZE = 64;
     public static final int TOOLBAR_HEIGHT = 64;
-    public static final int WINDOW_WIDTH = 960;
+    public static final int WINDOW_WIDTH = 512;
     public static final int WINDOW_HEIGHT = 512 + TOOLBAR_HEIGHT;
     
     // Listen for incoming connections
     public static void main(String[] args) {
-        // Add callback to save blackboard on server exit
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            public void run() {
-                saveBlackboard();
-            }
-        }));
-        
         // Instanciate blackboard
-        serverBlackboard = new Blackboard();
+        serverBlackboard = new Blackboard(true);
         loadBlackboard();
-        
+
         // Thread pool to handle multiple clients
         ExecutorService e = Executors.newCachedThreadPool();
         System.out.println("INFO: Starting server...");
