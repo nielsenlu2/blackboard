@@ -26,8 +26,8 @@ public class Blackboard {
             return 70;
         }
         
-        //if (isServer) // Wait if someone is writing to blackboard
-            //while (Server.canvasLock.isLocked());
+        if (isServer) // Wait if someone is writing to blackboard
+            while (canvasLock.isLocked());
 
         return canvas[x][y][z];
     }
