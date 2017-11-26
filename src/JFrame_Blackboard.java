@@ -73,12 +73,7 @@ class Surface extends JPanel implements ActionListener {
         }
         
         // Draw the toolbar
-        g2d.drawImage(JFrame_Blackboard.toolbarZoomPlus.getImage(), 0, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
-        g2d.drawImage(JFrame_Blackboard.toolbarZoomMinus.getImage(), 32, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
-        g2d.drawImage(JFrame_Blackboard.toolbarLeft.getImage(), 64, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
-        g2d.drawImage(JFrame_Blackboard.toolbarRight.getImage(), 96, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
-        g2d.drawImage(JFrame_Blackboard.toolbarUp.getImage(), 128, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
-        g2d.drawImage(JFrame_Blackboard.toolbarDown.getImage(), 160, Server.CANVAS_SIZE * Server.PIXEL_SIZE, this);
+        g2d.drawImage(JFrame_Blackboard.toolbar.getImage(), 0, Server.WINDOW_HEIGHT-Server.TOOLBAR_HEIGHT, this);
     }
 
     @Override
@@ -169,13 +164,7 @@ public class JFrame_Blackboard extends JFrame {
     public static int scrollY = 0;
     
     //Load toolbar images
-    public static ImageIcon toolbarZoomPlus = new ImageIcon("32.png");
-    public static ImageIcon toolbarZoomMinus = new ImageIcon("32.png");
-    public static ImageIcon toolbarLeft = new ImageIcon("32.png");
-    public static ImageIcon toolbarRight = new ImageIcon("32.png");
-    public static ImageIcon toolbarUp = new ImageIcon("32.png");
-    public static ImageIcon toolbarDown = new ImageIcon("32.png");
-    
+    public static ImageIcon toolbar = new ImageIcon("toolbar.png");
     private Color color = new Color(230, 10, 10);
     
     public JFrame_Blackboard() {
@@ -217,7 +206,7 @@ public class JFrame_Blackboard extends JFrame {
                 }
                 
                 // Check if click was on toolbar
-                if (mouse_y > Server.CANVAS_SIZE * Server.PIXEL_SIZE) {
+                if (mouse_y > (Server.WINDOW_HEIGHT - Server.TOOLBAR_HEIGHT) ) {
                     int selection = mouse_x / 32;
                     
                     System.out.println("LOG: Selected option #" + selection);
@@ -227,8 +216,11 @@ public class JFrame_Blackboard extends JFrame {
                             JFrame_Blackboard.PIXEL_SIZE += 2;
                             break;
                         case 1: // Zoom out
-                            if (JFrame_Blackboard.PIXEL_SIZE > Server.PIXEL_SIZE) {
-                                JFrame_Blackboard.PIXEL_SIZE -= 2;
+                            if (JFrame_Blackboard.PIXEL_SIZE > 1) {
+                                JFrame_Blackboard.PIXEL_SIZE -= 1;
+                                
+                                // Disable grid if on smallest zoom level
+                                drawGrid = !(JFrame_Blackboard.PIXEL_SIZE == 1);
                             }
                             break;
                         case 2: // Pan left
@@ -272,7 +264,7 @@ public class JFrame_Blackboard extends JFrame {
 
         // Set window properties
         setTitle("Blackboard");
-        setSize(Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE, 64 + (Server.CANVAS_SIZE * JFrame_Blackboard.PIXEL_SIZE));
+        setSize(Server.WINDOW_WIDTH, Server.WINDOW_HEIGHT);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
