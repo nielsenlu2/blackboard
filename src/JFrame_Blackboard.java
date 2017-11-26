@@ -42,8 +42,8 @@ class Surface extends JPanel implements ActionListener {
         Graphics2D g2d = (Graphics2D) g;
 
         // Draw the pixels
-        for (int it = 0; it < Server.CANVAS_SIZE; ++it) {
-            for (int jt = 0; jt < Server.CANVAS_SIZE; ++jt) {
+        for (int it = 0; it < Server.WINDOW_WIDTH / JFrame_Blackboard.PIXEL_SIZE; ++it) {
+            for (int jt = 0; jt < Server.WINDOW_HEIGHT / JFrame_Blackboard.PIXEL_SIZE; ++jt) {
                 
                 // Calculate scroll offset
                 int i = it + JFrame_Blackboard.scrollX;
@@ -220,14 +220,14 @@ public class JFrame_Blackboard extends JFrame {
                     
                     switch (selection) {
                         case 0: // Zoom in
-                            JFrame_Blackboard.PIXEL_SIZE += 2;
+                            JFrame_Blackboard.PIXEL_SIZE += 1;
                             break;
                         case 1: // Zoom out
                             if (JFrame_Blackboard.PIXEL_SIZE > 1) {
                                 JFrame_Blackboard.PIXEL_SIZE -= 1;
                                 
-                                // Disable grid if on smallest zoom level
-                                drawGrid = !(JFrame_Blackboard.PIXEL_SIZE == 1);
+                                // Disable grid if zoomed out too far
+                                drawGrid = !(JFrame_Blackboard.PIXEL_SIZE <= 2);
                             }
                             break;
                         case 2: // Pan left
