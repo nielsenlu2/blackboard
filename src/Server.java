@@ -18,8 +18,8 @@ public class Server {
     public static final int PIXEL_SIZE = 8;
     public static final int CANVAS_SIZE = 64;
     public static final int TOOLBAR_HEIGHT = 64;
-    public static final int WINDOW_WIDTH = 512;
-    public static final int WINDOW_HEIGHT = 512 + TOOLBAR_HEIGHT;
+    public static int WINDOW_WIDTH = 512;
+    public static int WINDOW_HEIGHT = 512 + TOOLBAR_HEIGHT;
     
     // Listen for incoming connections
     public static void main(String[] args) {

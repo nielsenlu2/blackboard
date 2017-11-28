@@ -199,6 +199,14 @@ public class JFrame_Blackboard extends JFrame {
             }
         });
         
+        // Handle resize events
+        addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                Server.WINDOW_WIDTH = getWidth();
+                Server.WINDOW_HEIGHT = getHeight();
+            }
+        });
+        
         // Handle mouse events
         addMouseListener(new MouseAdapter() {
             @Override
