@@ -77,7 +77,7 @@ public class Server {
             // Release file
             bufferedWriter.close();
         } catch(IOException e) {
-            System.out.println("ERROR: Could not write blackboard to file" + '\n' + e.toString());
+            System.out.println("ERROR: Could not write blackboard to file" + '\n' + e.toString() + '\n' + e.getMessage());
         }
     }
     
@@ -96,6 +96,12 @@ public class Server {
         }
         catch(Exception e) {
             System.out.println("WARNING: Could not load save. Starting blank canvas. \nReason: " + e.toString());
+            return;
+        }
+        
+        // Make sure file isn't empty
+        if (input == null) {
+            System.out.println("WARNING: Save file is empty.");
             return;
         }
         
