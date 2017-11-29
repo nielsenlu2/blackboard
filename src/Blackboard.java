@@ -1,17 +1,23 @@
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.*;
 
 public class Blackboard {
     // If this is the server's blackboard, must
     // have additional safeties during get and set
     private boolean isServer;
     private ReentrantLock canvasLock;
+    private Condition writeCondition, readCondition;
+    private int wantWrite;
     
     // Constructor
     public Blackboard(boolean isServer) {
         this.isServer = isServer;
+        wantWrite = 0;
         
-        if (isServer)
+        if (isServer) {
             canvasLock = new ReentrantLock(true);
+            writeCondition = canvasLock.newCondition();
+            readCondition = canvasLock.newCondition();
+        }
     }
     
     // 2d array holding each pixel's RGB values
@@ -26,8 +32,22 @@ public class Blackboard {
             return 70;
         }
         
-        if (isServer) // Wait if someone is writing to blackboard
-            while (canvasLock.isLocked());
+        if (isServer) {
+            // Wait if someone is writing / wants to write
+            while (wantWrite > 0) {
+                try {
+                    readCondition.await();
+                } catch (InterruptedException e) {
+                    // Do nothing if interrupted
+                }
+            }
+            
+            canvasLock.lock();
+            int color = canvas[x][y][z];
+            canvasLock.unlock();
+            
+            return color;
+        }
 
         return canvas[x][y][z];
     }
@@ -39,15 +59,22 @@ public class Blackboard {
             return;
         }
         
-        if (isServer) // Obtain lock
+        if (isServer) {
+            // Obtain lock
+            wantWrite++;
             canvasLock.lock();
+        }
         
         // Write data
         canvas[x][y][0] = r;
         canvas[x][y][1] = g;
         canvas[x][y][2] = b;
         
-        if (isServer)  // Release lock
+        if (isServer)  {
+            // Release lock
+            wantWrite--;
+            readCondition.signalAll();
             canvasLock.unlock();
+        }
     }
 }
